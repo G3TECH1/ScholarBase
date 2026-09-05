@@ -1,0 +1,60 @@
+name: Electron Build
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Set up Python (for building DB daemon)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install PyInstaller
+        run: python -m pip install --upgrade pip && pip install pyinstaller
+
+      - name: Build Python DB daemon (non-Windows)
+        if: matrix.os != 'windows-latest'
+        run: |
+          pyinstaller --onefile Nodejs/model/inMemoryDB/database_server.py --distpath dist_py --name database_server
+          mkdir -p build/python-daemon
+          mv dist_py/* build/python-daemon/
+
+      - name: Build Python DB daemon (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          pyinstaller --onefile Nodejs/model/inMemoryDB/database_server.py --distpath dist_py --name database_server
+          New-Item -ItemType Directory -Path build\python-daemon -Force | Out-Null
+          Copy-Item -Path dist_py\* -Destination build\python-daemon -Recurse -Force
+
+      - name: Ensure built daemon is executable
+        if: matrix.os != 'windows-latest'
+        run: chmod -R +x build/python-daemon || true
+
+      - name: Build app (electron-builder)
+        run: npm run dist
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-artifacts
+          path: dist/
