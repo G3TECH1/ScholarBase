@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Electronic Report Sheet</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        .no-print-toolbar {
+            max-width: 900px;
+            margin: 0 auto 20px auto;
+            background: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .print-only {
+            display: none;
+        }
+
+        .no-print-toolbar select {
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #cccccc;
+            font-size: 15px;
+            min-width: 250px;
+            outline: none;
+        }
+
+        .btn-print {
+            background: #25D366;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+
+        .btn-print:hover {
+            background: #1ebc57;
+        }
+
+        .report-card {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #1a365d;
+        }
+
+        .school-header {
+            text-align: center;
+            border-bottom: 3px double #1a365d;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .school-header h1 {
+            font-size: 26px;
+            color: #1a365d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .school-header p {
+            font-size: 13px;
+            color: #555555;
+            margin-top: 3px;
+        }
+
+        .school-header .report-title {
+            display: inline-block;
+            margin-top: 10px;
+            background: #1a365d;
+            color: #ffffff;
+            padding: 4px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .student-info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            font-size: 13px;
+        }
+
+        .info-item strong {
+            color: #1a365d;
+        }
+
+        .scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .scores-table th,
+        .scores-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .scores-table th {
+            background-color: #1a365d;
+            color: #ffffff;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .scores-table td.subject-name {
+            text-align: left;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .scores-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        .summary-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .summary-card h4 {
+            font-size: 12px;
+            color: #475569;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .summary-card .val {
+            font-size: 16px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .toggle-mode-btn {
+            border: none;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+            color: #475569;
+            transition: 0.2s;
+        }
+
+        .toggle-mode-btn.active-mode {
+            background: #1a365d;
+            color: #ffffff;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .no-print-toolbar,
+            .no-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
+
+            .remark-status-badge {
+                display: none !important;
+            }
+
+            .report-card {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                width: 100%;
+                max-width: 100%;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 12mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- TOOLBAR -->
+    <div class="no-print-toolbar">
+        <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <div>
+                <label for="studentSelect"><strong>Select Student: </strong></label>
+                <select id="studentSelect" onchange="switchStudent(this.value)">
+                    <% studentList.forEach(s=> { %>
+                        <option value="<%= s.id %>" <%=selectedStudent && selectedStudent.id===s.id ? 'selected' : '' %>>
+                            <%= s.Firstname %> <%= s.Lastname %> (<%= s.Class %> - <%= s.department || 'General' %>)
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <!-- REPORT VIEW TOGGLE SWITCH -->
+            <div style="display: flex; background: #e2e8f0; border-radius: 6px; padding: 3px;">
+                <button type="button" id="btnModeAll" class="toggle-mode-btn active-mode" onclick="toggleReportView('all')">Full Report</button>
+                <button type="button" id="btnModeTest" class="toggle-mode-btn" onclick="toggleReportView('test')">Test Only</button>
+                <button type="button" id="btnModeExam" class="toggle-mode-btn" onclick="toggleReportView('exam')">Exam Only</button>
+            </div>
+        </div>
+
+        <button class="btn-print" onclick="window.print()">
+            📄 Print / Save PDF for WhatsApp
+        </button>
+    </div>
+
+    <% if (selectedStudent) { %>
+        <!-- OFFICIAL REPORT CARD -->
+        <div class="report-card">
+
+            <!-- HEADER -->
+            <div class="school-header">
+                <h1>SCHOLARBASE ACADEMY</h1>
+                <p>Knowledge, Excellence & Character | Official Academic Terminal Report</p>
+                <span class="report-title">Student Progress Report</span>
+            </div>
+
+            <!-- STUDENT METADATA -->
+            <div class="student-info-grid">
+                <div class="info-item"><strong>Student ID:</strong> <%= selectedStudent.id %></div>
+                <div class="info-item"><strong>Full Name:</strong> <%= selectedStudent.Firstname %> <%= selectedStudent.Lastname %></div>
+                <div class="info-item"><strong>Class:</strong> <%= selectedStudent.Class %></div>
+                <div class="info-item"><strong>Department:</strong> <%= selectedStudent.department || 'N/A' %></div>
+                <div class="info-item"><strong>Gender:</strong> <%= selectedStudent.gender || 'N/A' %></div>
+                <div class="info-item"><strong>Residence:</strong> <%= selectedStudent.residence || 'Day' %></div>
+            </div>
+
+            <!-- ACADEMIC PERFORMANCE TABLE -->
+            <table class="scores-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Subject</th>
+                        <th class="test-col">Test Score (<%= gradingConfig.maxTestScore %>)</th>
+                        <th class="exam-col">Exam Score (<%= gradingConfig.maxExamScore %>)</th>
+                        <th class="total-col">Total Score (<%= gradingConfig.maxTestScore + gradingConfig.maxExamScore %>)</th>
+                        <th class="grade-col">Grade</th>
+                        <th class="remark-col">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="scoresTableBody">
+                    <% if (!academicSummary || academicSummary.processedSubjects.length===0){ %>
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No subjects assigned to this student.</td>
+                        </tr>
+                    <% } else { %>
+                        <% academicSummary.processedSubjects.forEach((sub)=>{ %>
+                            <tr class="subject-row">
+                                <td class="subject-name"><%= sub.title %></td>
+                                <td class="test-val"><%= sub.test %></td>
+                                <td class="exam-val"><%= sub.exam %></td>
+                                <td class="total-val" style="font-weight: bold;"><%= sub.total %></td>
+                                <td class="grade-val" style="font-weight: bold;"><%= sub.grade %></td>
+                                <td class="remark-val"><%= sub.remark %></td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+
+            <!-- SUMMARY STATISTICS -->
+            <% if (academicSummary){ %>
+                <div class="summary-section">
+                    <div class="summary-card">
+                        <h4>Continuous Assessment (Test)</h4>
+                        <p class="val">Total: <%= academicSummary.totalTest %></p>
+                        <p class="val" style="font-size: 13px; color: #64748b; margin-top: 4px;">Avg: <%= academicSummary.testAvg %></p>
+                    </div>
+                    <div class="summary-card">
+                        <h4>Terminal Examination</h4>
+                        <p class="val">Total: <%= academicSummary.totalExam %></p>
+                        <p class="val" style="font-size: 13px; color: #64748b; margin-top: 4px;">Avg: <%= academicSummary.examAvg %></p>
+                    </div>
+                    <div class="summary-card" style="background: #e0f2fe; border-color: #bae6fd;">
+                        <h4>Overall Performance</h4>
+                        <p class="val" style="color: #0369a1;">Grand Total: <%= academicSummary.grandTotal %></p>
+                        <p class="val" style="font-size: 13px; color: #0369a1; margin-top: 4px;">Overall Avg: <%= academicSummary.grandAvg %>%</p>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- REMARKS -->
+            <!-- REMARKS & APPROVALS SECTION -->
+<div style="margin-top: 20px; background: #f8fafc; padding: 20px; border-radius: 6px; border: 1px solid #cbd5e1;">
+    <h3 class="no-print" style="font-size: 14px; color: #1a365d; margin-bottom: 12px; text-transform: uppercase;">
+        Manage Academic Remarks
+    </h3>
+
+    <!-- Form Teacher Remark -->
+    <div style="margin-bottom: 15px;">
+        <p style="font-size: 13px; margin-bottom: 6px;">
+            <strong>Form Teacher's Remark:</strong>
+        </p>
+
+        <% const remarkStatus = (selectedStudent.remarkStatus || (selectedStudent.pendingPrincipalReview ? 'pending' : (selectedStudent.principalRemark ? 'approved' : 'not-started'))).toLowerCase(); %>
+        <div style="margin-bottom: 8px;" class="remark-status-badge">
+            <span style="display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: bold; text-transform: uppercase; background: <%= remarkStatus === 'approved' ? '#dcfce7' : remarkStatus === 'pending' ? '#fef3c7' : '#e2e8f0' %>; color: <%= remarkStatus === 'approved' ? '#166534' : remarkStatus === 'pending' ? '#92400e' : '#334155' %>;">
+                <%= remarkStatus === 'approved' ? 'Approved' : remarkStatus === 'pending' ? 'Pending Approval' : 'Not Started' %>
+            </span>
+        </div>
+
+        <!-- Printable View -->
+        <div class="print-only" style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; color: #334155; line-height: 1.6;">
+            <em><%= selectedStudent.teacherRemark || "No remark provided yet." %></em>
+        </div>
+
+        <!-- Editable Form (Hidden during print) -->
+        <form action="/save-remark" method="POST" class="no-print-toolbar" style="box-shadow: none; padding: 0; margin: 0; max-width: 100%; display: block;">
+            <input type="hidden" name="studentId" value="<%= selectedStudent.id %>">
+            <input type="hidden" name="remarkType" value="teacherRemark">
+            <textarea name="remark" rows="2" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 13px;" placeholder="Enter form teacher's remark..."><%= selectedStudent.teacherRemark || '' %></textarea>
+            <button type="submit" style="margin-top: 6px; background: #1a365d; color: #ffffff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                Submit for Principal Approval
+            </button>
+        </form>
+    </div>
+
+    <!-- Principal Remark -->
+    <div>
+        <p style="font-size: 13px; margin-bottom: 6px;">
+            <strong>Principal's Remark:</strong>
+        </p>
+
+        <!-- Printable View -->
+        <div class="print-only" style="margin-top: 8px; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; color: #334155; line-height: 1.6;">
+            <em><%= selectedStudent.principalRemark || "No principal remark provided yet." %></em>
+        </div>
+
+        <!-- Editable Form (Hidden during print) -->
+        <form action="/save-remark" method="POST" class="no-print-toolbar" style="box-shadow: none; padding: 0; margin: 0; max-width: 100%; display: block;">
+            <input type="hidden" name="studentId" value="<%= selectedStudent.id %>">
+            <input type="hidden" name="remarkType" value="principalRemark">
+            <textarea name="remark" rows="2" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-family: inherit; font-size: 13px;" placeholder="Enter principal's remark..."><%= selectedStudent.principalRemark || '' %></textarea>
+            <button type="submit" style="margin-top: 6px; background: #0284c7; color: #ffffff; border: none; padding: 6px 14px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                <%= remarkStatus === 'approved' ? 'Update Principal Approval' : 'Approve & Finalise Remark' %>
+            </button>
+        </form>
+    </div>
+</div>
+
+        </div>
+    <% } else { %>
+        <div style="text-align: center; background: white; padding: 40px; border-radius: 8px;">
+            <h3>No student data found.</h3>
+        </div>
+    <% } %>
+
+    <script>
+        // Server-injected configuration data loaded properly
+        const ACTIVE_CONFIG = <%- JSON.stringify(gradingConfig) %>;
+
+        let currentViewMode = 'all';
+
+        function toggleReportView(mode) {
+            currentViewMode = mode;
+
+            document.querySelectorAll('.toggle-mode-btn').forEach(b => b.classList.remove('active-mode'));
+            if (mode === 'all') document.getElementById('btnModeAll').classList.add('active-mode');
+            if (mode === 'test') document.getElementById('btnModeTest').classList.add('active-mode');
+            if (mode === 'exam') document.getElementById('btnModeExam').classList.add('active-mode');
+
+            const testCols = document.querySelectorAll('.test-col, .test-val');
+            const examCols = document.querySelectorAll('.exam-col, .exam-val');
+            const totalCols = document.querySelectorAll('.total-col, .total-val');
+            const gradeCols = document.querySelectorAll('.grade-col, .grade-val');
+            const remarkCols = document.querySelectorAll('.remark-col, .remark-val');
+
+            if (mode === 'test') {
+                testCols.forEach(el => el.style.display = '');
+                examCols.forEach(el => el.style.display = 'none');
+                totalCols.forEach(el => el.style.display = 'none');
+                gradeCols.forEach(el => el.style.display = 'none');
+                remarkCols.forEach(el => el.style.display = 'none');
+            } else if (mode === 'exam') {
+                testCols.forEach(el => el.style.display = 'none');
+                examCols.forEach(el => el.style.display = '');
+                totalCols.forEach(el => el.style.display = 'none');
+                gradeCols.forEach(el => el.style.display = 'none');
+                remarkCols.forEach(el => el.style.display = 'none');
+            } else {
+                testCols.forEach(el => el.style.display = '');
+                examCols.forEach(el => el.style.display = '');
+                totalCols.forEach(el => el.style.display = '');
+                gradeCols.forEach(el => el.style.display = '');
+                remarkCols.forEach(el => el.style.display = '');
+            }
+
+            calculateReportCard();
+        }
+
+        function calculateReportCard() {
+            const rows = document.querySelectorAll(".subject-row");
+            const maxTest = Number(ACTIVE_CONFIG.maxTestScore) || 40;
+            const maxExam = Number(ACTIVE_CONFIG.maxExamScore) || 60;
+            const maxPossible = maxTest + maxExam;
+
+            rows.forEach(row => {
+                const test = parseFloat(row.querySelector(".test-val").textContent) || 0;
+                const exam = parseFloat(row.querySelector(".exam-val").textContent) || 0;
+                const total = test + exam;
+
+                row.querySelector(".total-val").textContent = total;
+
+                const percentage = maxPossible > 0 ? (total / maxPossible) * 100 : 0;
+                const scaleList = ACTIVE_CONFIG.gradingScale || [];
+
+                const match = scaleList.find(s => percentage >= s.min && percentage <= s.max) || { grade: 'F', remark: 'Fail' };
+
+                row.querySelector(".grade-val").textContent = match.grade;
+                row.querySelector(".remark-val").textContent = match.remark;
+            });
+        }
+
+        function switchStudent(studentId) {
+            window.location.href = `/reportsheet?studentId=${studentId}`;
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            calculateReportCard();
+        });
+    </script>
+</body>
+</html>

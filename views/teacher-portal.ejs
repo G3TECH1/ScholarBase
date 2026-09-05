@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Teacher Mobile Portal</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+        
+        header.head { background: rgba(0,0,0,0.1); padding: 1rem; text-align: center; color: white; border-bottom: 2px solid rgba(255,255,255,0.2); }
+        header.head h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        
+        main { max-width: 800px; width: 100%; margin: 0 auto; padding: 0.5rem; }
+        
+        .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; animation: slideIn 0.3s ease; position: relative; }
+        .alert.success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+        .alert.error { background: #f8d7da; color: #721c24; border-left: 4px solid #f5c6cb; }
+        .alert .alert-close-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s; padding: 0; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; }
+        .alert .alert-close-btn:hover { opacity: 1; }
+        
+        .auth-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+        .auth-section h2 { color: #333; font-size: 1.3rem; margin-bottom: 1rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; transition: all 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-group input[type="password"] { font-size: 1.2rem; letter-spacing: 2px; }
+        
+        .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .welcome-header { background: rgba(255,255,255,0.1); color: white; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; backdrop-filter: blur(10px); }
+        .welcome-header h3 { margin: 0 0 0.3rem 0; font-size: 1.2rem; }
+        .welcome-header p { margin: 0.2rem 0; opacity: 0.9; font-size: 0.9rem; }
+        
+        .students-list { display: grid; gap: 1rem; }
+        .student-card { background: white; border-radius: 12px; padding: 1rem; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-left: 4px solid #667eea; }
+        .student-card h4 { color: #333; margin: 0 0 0.75rem 0; font-size: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .student-class { background: #e8f0ff; color: #667eea; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        
+        .grade-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0; }
+        .score-input-group label { font-size: 0.8rem; color: #666; font-weight: 600; }
+        .score-input-group input { width: 100%; padding: 0.6rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95rem; font-weight: 600; text-align: center; }
+        
+        .btn-save-grade { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 0.75rem; border-radius: 8px; width: 100%; border: none; font-weight: 600; cursor: pointer; margin-top: 0.5rem; }
+        .btn-save-grade:active { transform: scale(0.98); }
+        
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.5); padding: 0.75rem; border-radius: 8px; width: 100%; margin-top: 1rem; cursor: pointer; font-weight: 600; }
+        .logout-btn:active { background: rgba(255,255,255,0.3); }
+        
+        @media (max-height: 600px) { main { padding-top: 0.25rem; } }
+        
+        .info-box { background: rgba(255,255,255,0.1); color: white; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; border-left: 3px solid rgba(255,255,255,0.5); }
+        
+        .spinner { display: inline-block; width: 1rem; height: 1rem; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <header class="head">
+        <h1>Teacher Grade Entry</h1>
+        <p style="font-size: 0.9rem; opacity: 0.9; margin: 0;">ScholarBase School Management System</p>
+    </header>
+
+    <main>
+        <% if (success) { %><div class="alert success">✓ <%= success %><button class="alert-close-btn">&times;</button></div><% } %>
+        <% if (error) { %><div class="alert error">✕ <%= error %><button class="alert-close-btn">&times;</button></div><% } %>
+
+        <% if (!authorizedTeacher) { %>
+            <!-- LOGIN SECTION -->
+            <div class="auth-section">
+                <h2>Teacher Authentication</h2>
+                <p style="color: #666; margin-bottom: 1rem; font-size: 0.95rem;">Enter your credentials to access the grade entry system.</p>
+                
+                <form action="/teacher/auth" method="POST" id="teacherAuthForm">
+                    <div class="form-group">
+                        <label>6-Digit Passkey</label>
+                        <input type="password" name="passkey" id="passkeyInput" placeholder="000000" required maxlength="6" inputmode="numeric">
+                        <small style="color: #999;">Your unique teacher passkey (6 digits)</small>
+                    </div>
+
+                    <div id="subjectsContainer" style="display: none;">
+                        <div class="form-group">
+                            <label>Select Your Subject(s)</label>
+                            <div id="subjectsCheckboxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                            <small style="color: #999; display: block; margin-top: 0.5rem;">Select subjects if you want to enter grades</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Select Your Class(es)</label>
+                            <div id="classesCheckboxes" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                            <small style="color: #999; display: block; margin-top: 0.5rem;">Select class to enter grades</small>
+                        </div>
+                    </div>
+
+                    <div id="loadingIndicator" style="display: none; text-align: center; padding: 1rem; color: #667eea;">
+                        <span class="spinner" style="border-color: #667eea; border-top-color: white;"></span> Loading your data...
+                    </div>
+
+                    <div id="errorMessage" style="display: none; background: #ffebee; color: #c62828; padding: 0.75rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f5576c;"></div>
+                    
+                    <button type="submit" class="btn btn-primary" id="submitBtn">🔓 Login & Enter Grades</button>
+                </form>
+
+                <div class="info-box" style="margin-top: 1rem;">
+                    <strong>Tip:</strong> Keep your passkey secure. Only you should have access to it.
+                </div>
+            </div>
+
+        <% } else { %>
+            <!-- GRADES ENTRY SECTION -->
+            <div class="welcome-header">
+                <h3>Welcome, <%= authorizedTeacher.name %>!</h3>
+                <p><strong>Subjects:</strong> <%= authorizedTeacher.subjects.join(", ") %></p>
+                <p><strong>Classes:</strong> <%= authorizedTeacher.classes.join(", ") %></p>
+            </div>
+
+            <% if (authorizedTeacher.isClassTeacher) { %>
+                <div class="info-box" style="background: rgba(255,255,255,0.12); border-left-color: #fbbf24; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div><strong>📝 Class Teacher Tools:</strong> You can add a class-wide remark or set remarks individually for students in your class.</div>
+                    <button type="button" class="btn btn-primary" onclick="openRemarkModal()" style="width: auto; align-self: flex-start; padding: 0.7rem 1rem;">+ Add Class Remark</button>
+                </div>
+            <% } %>
+
+            <div class="info-box">
+                <strong>📝 Instructions:</strong> Enter test and exam scores (0-100) for each student and subject, then tap "Save Grade".
+            </div>
+
+            <!-- Subject Toggles / Tabs -->
+            <div class="subject-toggles" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                <% authorizedTeacher.subjects.forEach((subject, index) => { %>
+                    <button type="button" class="tab-btn" 
+                            onclick="openSubjectTab('<%= subject.replace(/[^a-zA-Z0-9]/g, '-') %>', this)" 
+                            style="flex-shrink: 0; padding: 0.5rem 1.5rem; border: none; border-radius: 20px; font-weight: 600; cursor: pointer; transition: 0.3s; background: <%= index === 0 ? '#667eea' : '#e0e0e0' %>; color: <%= index === 0 ? 'white' : '#333' %>;">
+                        <%= subject %>
+                    </button>
+                <% }) %>
+            </div>
+
+            <!-- Filter & Search Bar -->
+            <div class="filter-toolbar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 200px;">
+                    <input 
+                        type="text" 
+                        id="studentSearchInput" 
+                        onkeyup="filterStudents()" 
+                        placeholder="🔍 Search student by name..." 
+                        style="width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; outline: none;"
+                    />
+                </div>
+
+                <div style="width: 180px;">
+                    <select 
+                        id="classFilterSelect" 
+                        onchange="filterStudents()" 
+                        style="width: 100%; padding: 10px 14px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; background: white; outline: none; cursor: pointer;"
+                    >
+                        <option value="ALL">All Classes</option>
+                        <option value="JSS1">JSS 1</option>
+                        <option value="JSS2">JSS 2</option>
+                        <option value="JSS3">JSS 3</option>
+                        <option value="SS1">SS 1</option>
+                        <option value="SS2">SS 2</option>
+                        <option value="SS3">SS 3</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tab Contents (Filtered Students according to studentSubjects Schema) -->
+            <div class="students-list">
+                <% authorizedTeacher.subjects.forEach((subject, index) => { %>
+                    <div id="tab-<%= subject.replace(/[^a-zA-Z0-9]/g, '-') %>" class="subject-tab-content" style="display: <%= index === 0 ? 'grid' : 'none' %>; gap: 1rem;">
+                        
+                        <% 
+                        const studentSubjectsMap = {
+                          "Not in senior class": [
+                            "Math", "English", "Lit-in-English", "Basic-Tech", "Basic-Science",
+                            "ICT", "Music", "French", "Yoruba", "Fine Art", "Civic Education", "National Security"
+                          ],
+                          Science: [
+                            "Math", "English", "Biology", "Chemistry", "Agric", "DPR",
+                            "Physics", "Further Maths", "Food & Nuts", "Technical Drawing", "Civic Education", "Economics"
+                          ],
+                          Art: [
+                            "Math", "English", "Government", "Dyeing & Bleaching", "Literature",
+                            "Food & Nuts", "CRS", "Civic Education", "Economics", "History"
+                          ],
+                          Commercial: [
+                            "Math", "English", "Accounting", "Commerce", "Economics",
+                            "Civic Education", "Further Maths", "Food & Nuts", "DPR", "Agric"
+                          ]
+                        };
+
+                        let studentsOfferingSubject = matchedStudents.filter(student => {
+                            if (!student.assignedSubjects) return false;
+
+                            const subClean = subject.toLowerCase().replace(/[^a-z0-9]/g, "");
+                            const cls = (student.Class || "").toUpperCase().trim();
+                            let deptKey = student.department;
+
+                            if (cls.startsWith("JSS") || !deptKey || deptKey === "Not in senior class") {
+                              deptKey = "Not in senior class";
+                            }
+
+                            const allowedList = studentSubjectsMap[deptKey] || studentSubjectsMap["Not in senior class"];
+
+                            const isAllowed = allowedList.some(allowed => {
+                              const allowedClean = allowed.toLowerCase().replace(/[^a-z0-9]/g, "");
+                              return allowedClean === subClean || subClean.includes(allowedClean) || allowedClean.includes(subClean);
+                            });
+
+                            if (!isAllowed) return false;
+
+                            return student.assignedSubjects.some(s => s.title.toLowerCase().trim() === subject.toLowerCase().trim());
+                        });
+                        %>
+
+                        <% if (studentsOfferingSubject.length === 0) { %>
+                            <div style="background: white; padding: 2rem; border-radius: 12px; text-align: center; color: #999;">
+                                <p>No students found offering <strong><%= subject %></strong> in the selected classes/department.</p>
+                            </div>
+                        <% } else { %>
+                            <% studentsOfferingSubject.forEach((student) => { 
+                                let currentSub = student.assignedSubjects.find(s => s.title.toLowerCase().trim() === subject.toLowerCase().trim()) || { TestScore: 0, examScore: 0 };
+                            %>
+                                <div class="student-card" 
+                                    data-name="<%= student.Firstname %> <%= student.Lastname %>" 
+                                    data-class="<%= student.Class %>">
+                                    <h4>
+                                        <span><%= student.Firstname %> <%= student.Lastname %></span>
+                                        <div style="display: flex; gap: 5px;">
+                                            <span class="student-class"><%= student.Class %></span>
+                                            <span class="student-class" style="background: #f3e8ff; color: #7e22ce;"><%= student.department || 'General' %></span>
+                                        </div>
+                                    </h4>
+                                    
+                                    <div style="border-top: 1px solid #e0e0e0; padding-top: 0.75rem; margin-top: 0.75rem;">
+                                        <form action="/teacher/save-grade" method="POST" class="grade-form">
+                                            <input type="hidden" name="studentId" value="<%= student.id %>">
+                                            <input type="hidden" name="passkey" value="<%= authorizedTeacher.passkey %>">
+                                            <input type="hidden" name="subjectName" value="<%= subject %>">
+
+                                            <div class="grade-inputs">
+                                                <div class="score-input-group">
+                                                    <label>Test (0-100)</label>
+                                                    <input type="number" name="testScore" min="0" max="100" value="<%= currentSub.TestScore %>" required inputmode="numeric">
+                                                </div>
+                                                <div class="score-input-group">
+                                                    <label>Exam (0-100)</label>
+                                                    <input type="number" name="examScore" min="0" max="100" value="<%= currentSub.examScore %>" required inputmode="numeric">
+                                                </div>
+                                            </div>
+                                            
+                                            <button type="submit" class="btn-save-grade" style="margin-top: 0.5rem;">💾 Save <%= subject %> Score</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+            <form action="/logout" method="GET" style="margin-top: 2rem;">
+                <button type="submit" class="logout-btn">🚪 Logout</button>
+            </form>
+
+        <% } %>
+    </main>
+
+    <div id="teacherRemarkModal" class="modal-container" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 50;">
+        <div class="modal-content" style="background: white; max-width: 560px; width: 92%; border-radius: 16px; padding: 1.5rem; position: relative;">
+            <span class="close-buttton" onclick="closeRemarkModal()" style="position: absolute; top: 1rem; right: 1rem; font-size: 1.75rem; cursor: pointer;">&times;</span>
+            <h2 style="margin-bottom: 1rem;">🧾 Class Remark Manager</h2>
+            <form action="/save-remark" method="POST">
+                <input type="hidden" name="remarkType" value="teacherRemark">
+                <div class="form-group">
+                    <label>Apply to:</label>
+                    <select name="remarkScope" id="remarkScope" onchange="toggleRemarkTarget()" required style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db;">
+                        <option value="">Select an option</option>
+                        <option value="all">All students in my class</option>
+                        <option value="student">Specific student</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="studentRemarkTarget" style="display: none;">
+                    <label>Student</label>
+                    <select name="studentId" style="width: 100%; padding: 0.7rem; border-radius: 8px; border: 1px solid #d1d5db;">
+                        <option value="">Choose a student</option>
+                        <% if (remarkStudents && remarkStudents.length) { %>
+                            <% remarkStudents.forEach(student => { %>
+                                <option value="<%= student.id %>"><%= student.Firstname %> <%= student.Lastname %> (<%= student.Class %>)</option>
+                            <% }) %>
+                        <% } %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Remark</label>
+                    <textarea name="teacherRemark" rows="4" required placeholder="e.g. A hardworking and respectful class. Keep improving in participation." style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #d1d5db; resize: vertical;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">✓ Save Remark</button>
+                    <button type="button" class="btn btn-cancel" onclick="closeRemarkModal()" style="flex: 1; background: #e5e7eb; color: #111827; border: none; border-radius: 8px;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openRemarkModal() {
+            document.getElementById('teacherRemarkModal').style.display = 'flex';
+        }
+
+        function closeRemarkModal() {
+            document.getElementById('teacherRemarkModal').style.display = 'none';
+        }
+
+        function toggleRemarkTarget() {
+            const selected = document.getElementById('remarkScope').value;
+            const target = document.getElementById('studentRemarkTarget');
+            target.style.display = selected === 'student' ? 'block' : 'none';
+            if (selected !== 'student') {
+                const select = target.querySelector('select');
+                if (select) select.value = '';
+            }
+        }
+
+        const passkeyInput = document.querySelector('input[name="passkey"]');
+        if (passkeyInput) {
+            passkeyInput.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            
+            passkeyInput.addEventListener('blur', async function() {
+                if (this.value.length === 6) {
+                    await fetchTeacherData(this.value);
+                }
+            });
+        }
+
+        function filterStudents() {
+            const searchInput = document.getElementById('studentSearchInput').value.trim().toLowerCase();
+            const selectedClass = document.getElementById('classFilterSelect').value.trim().toUpperCase();
+
+            const studentCards = document.querySelectorAll('.student-card');
+
+            studentCards.forEach(card => {
+                const studentName = (card.getAttribute('data-name') || '').toLowerCase();
+                const studentClass = (card.getAttribute('data-class') || '').toUpperCase();
+
+                const matchesName = studentName.includes(searchInput);
+                const matchesClass = (selectedClass === 'ALL' || studentClass === selectedClass);
+
+                if (matchesName && matchesClass) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            document.querySelectorAll('.subject-tab-content').forEach(tab => {
+                const visibleCards = tab.querySelectorAll('.student-card:not([style*="display: none"])');
+                let noResultsMsg = tab.querySelector('.no-filter-results');
+            
+                if (visibleCards.length === 0 && studentCards.length > 0) {
+                    if (!noResultsMsg) {
+                        noResultsMsg = document.createElement('p');
+                        noResultsMsg.className = 'no-filter-results';
+                        noResultsMsg.style.cssText = 'text-align: center; color: #888; padding: 20px; grid-column: 1 / -1;';
+                        noResultsMsg.textContent = 'No matching students found for this search/filter.';
+                        tab.appendChild(noResultsMsg);
+                    }
+                    noResultsMsg.style.display = 'block';
+                } else if (noResultsMsg) {
+                    noResultsMsg.style.display = 'none';
+                }
+            });
+        }
+
+        async function fetchTeacherData(passkey) {
+            const loadingDiv = document.getElementById('loadingIndicator');
+            const errorDiv = document.getElementById('errorMessage');
+            const subjectsContainer = document.getElementById('subjectsContainer');
+            
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/teacher/get-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passkey })
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'Invalid passkey');
+                }
+                
+                const subjectsDiv = document.getElementById('subjectsCheckboxes');
+                subjectsDiv.innerHTML = '';
+                data.subjects.forEach(subject => {
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal; margin: 0;';
+                    label.innerHTML = `
+                        <input type="checkbox" name="subjects[]" value="${subject}" required>
+                        <span>${subject}</span>
+                    `;
+                    subjectsDiv.appendChild(label);
+                });
+                
+                const classesDiv = document.getElementById('classesCheckboxes');
+                classesDiv.innerHTML = '';
+                data.classes.forEach(cls => {
+                    const label = document.createElement('label');
+                    label.style.cssText = 'display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: normal; margin: 0;';
+                    label.innerHTML = `
+                        <input type="checkbox" name="classes[]" value="${cls}" required>
+                        <span>${cls}</span>
+                    `;
+                    classesDiv.appendChild(label);
+                });
+                
+                subjectsContainer.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+                loadingDiv.style.display = 'none';
+                subjectsContainer.style.display = 'none';
+            }
+        }
+
+        function openSubjectTab(subjectId, btnElement) {
+            document.querySelectorAll('.subject-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.background = '#e0e0e0';
+                btn.style.color = '#333';
+            });
+
+            const activeTab = document.getElementById('tab-' + subjectId);
+            if (activeTab) {
+                activeTab.style.display = 'grid';
+            }
+
+            btnElement.style.background = '#667eea';
+            btnElement.style.color = 'white';
+        }
+
+        document.querySelectorAll('.grade-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const btn = this.querySelector('.btn-save-grade');
+                const originalText = btn.innerHTML;
+                
+                btn.innerHTML = '<span class="spinner"></span> Saving...';
+                btn.disabled = true;
+
+                const formData = new FormData(this);
+                const payload = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await fetch('/teacher/save-grade', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        btn.innerHTML = '✅ Saved!';
+                        btn.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
+
+                        setTimeout(() => {
+                            btn.innerHTML = originalText;
+                            btn.style.background = '';
+                            btn.disabled = false;
+                        }, 1800);
+                    } else {
+                        throw new Error(result.error || 'Failed to save grade');
+                    }
+                } catch (err) {
+                    alert('Error saving grade: ' + err.message);
+                    btn.innerHTML = '❌ Error';
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }, 2000);
+                }
+            });
+        });
+
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (this.dataset.submitted) {
+                    e.preventDefault();
+                }
+                this.dataset.submitted = true;
+            });
+        });
+    </script>
+</body>
+</html>

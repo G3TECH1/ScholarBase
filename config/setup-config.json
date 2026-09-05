@@ -1,0 +1,12 @@
+{
+  "initialized": true,
+  "initDate": "2026-08-04T12:59:10.420Z",
+  "principal": {
+    "name": "Dr. John Okonkwo",
+    "passwordHash": "064bd97dfe70efc073857b0116d783d4b687f9e5f3821220eed46f2b89436067"
+  },
+  "admin": {
+    "name": "Mrs. Chioma Adeyemi",
+    "passwordHash": "3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121"
+  }
+}

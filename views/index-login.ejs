@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ScholarBase DBMS</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        /* ---------------- MS WORD STYLE SPLASH SCREEN ---------------- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        #splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-card {
+            text-align: center;
+            max-width: 420px;
+            width: 90%;
+            padding: 2.5rem 1.5rem;
+        }
+
+        .splash-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            }
+
+            50% {
+                transform: scale(1.04);
+                box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            }
+        }
+
+        .splash-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin: 0 0 0.4rem 0;
+        }
+
+        .splash-subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 0 0 2rem 0;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .splash-status {
+            font-size: 0.82rem;
+            color: #cbd5e1;
+            font-family: monospace;
+            height: 1.2em;
+        }
+
+        .splash-footer {
+            position: absolute;
+            bottom: 2rem;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        /* ---------------- MAIN LAYOUT ---------------- */
+        body {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 1.25rem;
+        }
+
+        .home-container {
+            width: 100%;
+            max-width: 960px;
+            text-align: center;
+            color: white;
+        }
+
+        .home-header {
+            margin-bottom: 2rem;
+        }
+
+        .home-header h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .home-header p {
+            font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        /* Mobile-First Responsive Grid */
+        .portals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .portal-card {
+            background: #ffffff;
+            color: #0f172a;
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: left;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .portal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-icon-wrapper {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+        }
+
+        .icon-principal {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .icon-admin {
+            background: #ffe4e6;
+            color: #e11d48;
+        }
+
+        .icon-teacher {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .portal-card h2 {
+            font-size: 1.4rem;
+            margin: 0 0 0.5rem 0;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .portal-card p {
+            color: #64748b;
+            margin: 0 0 1.5rem 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .portal-card .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            width: 100%;
+            min-height: 48px;
+        }
+
+        .btn-principal {
+            background: #4338ca;
+            color: white;
+        }
+
+        .btn-principal:hover {
+            background: #3730a3;
+        }
+
+        .btn-admin {
+            background: #e11d48;
+            color: white;
+        }
+
+        .btn-admin:hover {
+            background: #be123c;
+        }
+
+        .btn-teacher {
+            background: #15803d;
+            color: white;
+        }
+
+        .btn-teacher:hover {
+            background: #166534;
+        }
+
+        /* LAN Banner */
+        .lan-banner {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 1.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .lan-info {
+            text-align: left;
+        }
+
+        .lan-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .lan-url {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #38edf8;
+            margin-top: 2px;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            position: relative;
+            animation: popIn 0.25s ease;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h2 {
+            color: #0f172a;
+            margin-top: 0;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            color: #334155;
+            font-size: 0.88rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4338ca;
+        }
+
+        .close {
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            line-height: 1;
+        }
+
+        .error-msg {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border: 1px solid #fecaca;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-submit {
+            flex: 1;
+            padding: 0.8rem;
+            background: #4338ca;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 0.8rem;
+            background: #f1f5f9;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            min-height: 44px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ---------------- MS WORD / ENTERPRISE SPLASH LOADER ---------------- -->
+    <div id="splash-screen">
+        <div class="splash-card">
+            <div class="splash-logo">
+                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+            </div>
+            <h1 class="splash-title">ScholarBase DBMS</h1>
+            <p class="splash-subtitle">School Management System</p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="splashProgressBar"></div>
+            </div>
+            <div class="splash-status" id="splashStatusText">Initializing modules...</div>
+        </div>
+        <div class="splash-footer">ScholarBase DBMS v1.0 • Enterprise Edition</div>
+    </div>
+
+    <!-- ---------------- MAIN APP HOME ---------------- -->
+    <div class="home-container">
+        <div class="home-header">
+            <h1>
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+                    <path d="M6 12v5c3 3 9 3 12 0v-5" />
+                </svg>
+                ScholarBase DBMS
+            </h1>
+            <p>School Record Management & Assessment Platform</p>
+        </div>
+
+        <% if (typeof localIp !=='undefined' && localIp) { %>
+            <div class="lan-banner">
+                <div class="lan-info">
+                    <p>Mobile Teacher Portal (Local LAN Access):</p>
+                    <div class="lan-url" id="lanUrl">http://<%= localIp %>:2000/teacher</div>
+                </div>
+                <button class="copy-btn" onclick="copyLanUrl()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy Address
+                </button>
+            </div>
+            <% } %>
+
+                <div class="portals-grid">
+                    <!-- Principal Portal Card -->
+                    <div class="portal-card">
+                        <div>
+                            <div class="card-icon-wrapper icon-principal">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                </svg>
+                            </div>
+                            <h2>Principal Portal</h2>
+                            <p>Review academic analytics, audit class grading status, and inspect activity logs.</p>
+                        </div>
+                        <button class="btn btn-principal" onclick="openPrincipalLogin()">Access Principal
+                            Portal</button>
+                    </div>
+
+                    <!-- Admin Portal Card -->
+                    <div class="portal-card">
+                        <div>
+                            <div class="card-icon-wrapper icon-admin">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </div>
+                            <h2>DB Admin Portal</h2>
+                            <p>Manage student records, register teaching staff, and manage database keys.</p>
+                        </div>
+                        <button class="btn btn-admin" onclick="openAdminLogin()">Access Admin Portal</button>
+                    </div>
+
+                    <!-- Teacher Portal Card -->
+                    <div class="portal-card">
+                        <div>
+                            <div class="card-icon-wrapper icon-teacher">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                                </svg>
+                            </div>
+                            <h2>Teacher Portal</h2>
+                            <p>Enter and update student test and exam scores seamlessly across local devices.</p>
+                        </div>
+                        <a href="/teacher" class="btn btn-teacher">Open Teacher Portal</a>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>🔒 Offline Environment — Database is secured locally on this device.</p>
+                </div>
+    </div>
+
+    <!-- Principal Login Modal -->
+    <div id="principalLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePrincipalLogin()">&times;</span>
+            <h2>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                Principal Authentication
+            </h2>
+            <div id="principalError" class="error-msg" style="display: none;"></div>
+            <form onsubmit="loginPrincipal(event)">
+                <div class="form-group">
+                    <label>Master Passkey</label>
+                    <input type="password" id="principalPassword" placeholder="Enter password" required>
+
+                    <div style="text-align: right; margin-top: 8px;">
+                        <a href="#" onclick="openModal('recoveryModal')"
+                            style="color: #3498db; font-size: 13px; text-decoration: none; font-weight: bold;">Forgot
+                            Password? <br> Use Recovery Key 🔑</a>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit">Login</button>
+                    <button type="button" class="btn-cancel" onclick="closePrincipalLogin()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminLogin()">&times;</span>
+            <h2>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                Admin Authentication
+            </h2>
+            <div id="adminError" class="error-msg" style="display: none;"></div>
+            <form onsubmit="loginAdmin(event)">
+                <div class="form-group">
+                    <label>Master Passkey</label>
+                    <input type="password" id="adminPassword" placeholder="Enter password" required>
+
+                    <div style="text-align: right; margin-top: 8px;">
+                        <a href="#" onclick="openModal('recoveryModal')"
+                            style="color: #3498db; font-size: 13px; text-decoration: none; font-weight: bold;">Forgot
+                            Password? <br> Use Recovery Key 🔑</a>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit" style="background: #e11d48;">Login</button>
+                    <button type="button" class="btn-cancel" onclick="closeAdminLogin()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Account Recovery Modal -->
+    <div id="recoveryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 420px;">
+            <span class="close" onclick="closeModal('recoveryModal')">&times;</span>
+            <h2 style="margin-top: 0; color: #2c3e50;">🔑 Account Recovery</h2>
+            <p style="font-size: 13px; color: #7f8c8d; margin-bottom: 20px;">
+                Enter your 16-character Emergency System Recovery Key to reset your account password
+            </p>
+
+            <div id="recoveryStatus"
+                style="display: none; padding: 0.75rem; border-radius:8px; margin-bottom: 1rem; font-size: 0.85rem; text-align: left;">
+            </div>
+
+            <form id="recoveryForm" style="display: flex; flex-direction: column; gap: 15px;"
+                onsubmit="submitAccountRecovery(event)">
+                <div>
+                    <label style="font-size: 13px; font-weight: bold;">Account Role</label>
+                    <select class="filter-select" id="recoveryRole" style="width: 100%; margin-top: 4px;" required>
+                        <option value="admin">DB Admin</option>
+                        <option value="principal">Principal</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size: 13px; font-weight: bold;">Recovery Key</label>
+                    <input type="text" id="recoveryKeyInput" placeholder="MZ-XXXX-XXXX-XXXX" required
+                        class="filter-input" style="width: 100%; box-sizing: border-box; font-family: monospace;">
+                </div>
+                <div>
+                    <label style="font-size: 13px; font-weight: bold;">New Password</label>
+                    <input type="password" id="newPasswordInput" placeholder="At least 6 characters" required
+                        minlength="6" class="filter-input" style="width: 100%; box-sizing: border-box;">
+                </div>
+                <button type="submit" id="recoverySubmitBtn"
+                    style="background: #e74c3c; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 8px;">
+                    Reset Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ---------------- MS WORD LOADING SIMULATOR ----------------
+        window.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.getElementById('splashProgressBar');
+            const statusText = document.getElementById('splashStatusText');
+            const splashScreen = document.getElementById('splash-screen');
+
+            const steps = [
+                { percent: 25, label: "Loading core drivers..." },
+                { percent: 55, label: "Verifying encrypted keys..." },
+                { percent: 85, label: "Connecting local database..." },
+                { percent: 100, label: "System Ready." }
+            ];
+
+            let index = 0;
+            const interval = setInterval(() => {
+                if (index < steps.length) {
+                    progressBar.style.width = steps[index].percent + '%';
+                    statusText.textContent = steps[index].label;
+                    index++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        splashScreen.classList.add('fade-out');
+                    }, 300);
+                }
+            }, 300);
+        });
+        function showRecoveryStatus(message, isSuccess = false) {
+            const statusDiv = document.getElementById('recoveryStatus');
+            statusDiv.style.display = 'block';
+
+            if (isSuccess) {
+                statusDiv.style.background = '#f0fdf4';
+                statusDiv.style.color = '#166534';
+                statusDiv.style.border = '1px solid #bbf7d0';
+                statusDiv.innerHTML = '✓ ' + message;
+            } else {
+                statusDiv.style.background = '#fef2f2';
+                statusDiv.style.color = '#991b1b';
+                statusDiv.style.border = '1px solid #fecaca';
+                statusDiv.innerHTML = '✕ Error: ' + message;
+            }
+        }
+
+        function closeModal(param = "recoveryModal") {
+            document.getElementById(param).style.display = 'none';
+            if (param === 'recoveryModal') {
+                document.getElementById('newPasswordInput').value = '';
+                document.getElementById('recoveryKeyInput').value = '';
+                const statusDiv = document.getElementById('recoveryStatus');
+                if (statusDiv) statusDiv.style.display = 'none';
+            }
+        }
+
+        function openModal(param = "recoveryModal") {
+            closeBothModalOnce(); // Hide active login modal before showing recovery
+
+            document.getElementById(param).style.display = 'flex';
+            document.getElementById('recoveryKeyInput').focus();
+        }
+
+        function closeBothModalOnce() {
+            closePrincipalLogin();
+            closeAdminLogin();
+        }
+
+        // --------------- Recovery Key and Password Form Submission -------------
+        async function submitAccountRecovery(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('recoverySubmitBtn');
+            const statusDiv = document.getElementById('recoveryStatus');
+
+            // Reset UI state
+            statusDiv.style.display = 'none';
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Verifying Key...';
+
+            const payload = {
+                role: document.getElementById('recoveryRole').value,
+                recoveryKey: document.getElementById('recoveryKeyInput').value,
+                newPassword: document.getElementById('newPasswordInput').value
+            };
+
+            try {
+                const response = await fetch('/auth/recover-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    showRecoveryStatus(result.message, true);
+                    setTimeout(() => {
+                        closeModal('recoveryModal');
+                        document.getElementById('recoveryForm').reset();
+                        submitBtn.disabled = false;
+                        submitBtn.innerText = 'Reset Password';
+                    }, 1600);
+                } else {
+                    showRecoveryStatus(result.error || 'Password reset failed.', false);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Reset Password';
+                }
+            } catch (err) {
+                showRecoveryStatus('Network error processing recovery.', false);
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Reset Password';
+            }
+        }
+        // Fixed Backdrop Click Handler for All Modals
+        window.onclick = function (event) {
+            let pModal = document.getElementById('principalLoginModal');
+            if (event.target === pModal) closePrincipalLogin();
+
+            let aModal = document.getElementById('adminLoginModal');
+            if (event.target === aModal) closeAdminLogin();
+
+            let rModal = document.getElementById('recoveryModal');
+            if (event.target === rModal) closeModal('recoveryModal');
+        };
+        // ---------------- MODAL & AUTH FUNCTIONS ----------------
+        function openPrincipalLogin() {
+            document.getElementById('principalLoginModal').style.display = 'flex';
+            document.getElementById('principalPassword').focus();
+        }
+
+        function closePrincipalLogin() {
+            document.getElementById('principalLoginModal').style.display = 'none';
+            document.getElementById('principalPassword').value = '';
+            document.getElementById('principalError').style.display = 'none';
+        }
+
+        function openAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'flex';
+            document.getElementById('adminPassword').focus();
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('adminLoginModal').style.display = 'none';
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminError').style.display = 'none';
+        }
+
+        // function closeBothModalOnce() {
+        //     let principalModal = document.getElementById('principalLoginModal');
+        //     let adminModal = document.getElementById('adminLoginModal')
+
+        //     if (window.getComputedStyle(principalModal).display === 'flex') {
+        //         closePrincipalLogin()
+        //     } else if (window.getComputedStyle(adminModal).display === 'flex') {
+        //         closeAdminLogin()
+        //     }
+
+        // }
+
+        async function loginPrincipal(e) {
+            e.preventDefault();
+            const password = document.getElementById('principalPassword').value;
+            const errorDiv = document.getElementById('principalError');
+
+            try {
+                const response = await fetch('/auth/principal-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid master password';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        async function loginAdmin(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPassword').value;
+            const errorDiv = document.getElementById('adminError');
+
+            try {
+                const response = await fetch('/auth/admin-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorDiv.textContent = data.error || 'Invalid master password';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorDiv.textContent = 'Connection error. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function copyLanUrl() {
+            const urlText = document.getElementById('lanUrl').innerText;
+            navigator.clipboard.writeText(urlText).then(() => {
+                alert('Copied URL: ' + urlText);
+            });
+        }
+
+       
+    </script>
+</body>
+
+</html>

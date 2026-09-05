@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB Admin | ScholarBase DBMS</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/script.js" defer></script>
+    <style>
+        /* Modern Filter Controls & UX Enhancements */
+        .filter-bar {
+            display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;
+            background: #f8fafc; padding: 0.85rem; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+        .filter-bar input[type="text"] {
+            flex: 2; min-width: 200px; padding: 0.6rem 0.85rem; border: 1px solid #cbd5e1;
+            border-radius: 6px; font-size: 0.9rem; outline: none; transition: all 0.2s;
+        }
+        .filter-bar select {
+            flex: 1; min-width: 140px; padding: 0.6rem; border: 1px solid #cbd5e1;
+            border-radius: 6px; font-size: 0.9rem; outline: none; background: white;
+        }
+        .filter-bar input:focus, .filter-bar select:focus {
+            border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        .table-responsive {
+            width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid #e2e8f0;
+        }
+
+        /* Enhanced Modal Styles */
+        .modal-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); z-index: 1000; display: none;
+            justify-content: center; align-items: center; animation: fadeIn 0.3s ease;
+            padding: 1rem; box-sizing: border-box;
+        }
+        
+        .modal-container.show { display: flex; }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-content {
+            background: white; border-radius: 12px; padding: 1.75rem; max-width: 500px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; animation: slideUp 0.3s ease;
+            max-height: 90vh; overflow-y: auto;
+        }
+        
+        .close-buttton {
+            position: absolute; top: 1rem; right: 1rem; font-size: 1.8rem; cursor: pointer;
+            color: #999; transition: all 0.3s; padding: 0.2rem; line-height: 1;
+        }
+        
+        .close-buttton:hover { color: #333; transform: rotate(90deg); }
+        
+        .modal-content h2 { color: #333; margin: 0 0 1.25rem 0; font-size: 1.4rem; }
+        
+        .form-group { margin-bottom: 1.1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: #333; font-size: 0.9rem; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.7rem; border: 2px solid #e0e0e0; border-radius: 6px;
+            font-size: 0.95rem; transition: all 0.3s; box-sizing: border-box;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 0.5rem; }
+        .subject-grid label { display: flex; align-items: center; gap: 0.5rem; margin: 0; font-weight: 400; cursor: pointer; font-size: 0.88rem; }
+        .subject-grid input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        
+        .dashed-btn {
+            border: 2px dashed #667eea; background: transparent; padding: 0.65rem; border-radius: 6px;
+            cursor: pointer; width: 100%; margin-top: 0.75rem; color: #667eea; font-weight: 600;
+            transition: all 0.3s; font-size: 0.88rem;
+        }
+        .dashed-btn:hover { background: #f0f7ff; border-color: #5568d3; }
+        
+        .btn-group { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+        .btn-submit { flex: 1; padding: 0.75rem; background: #667eea; color: white; border: none;
+            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-submit:hover { background: #5568d3; transform: translateY(-1px); }
+        .btn-cancel { flex: 1; padding: 0.75rem; background: #e0e0e0; color: #333; border: none;
+            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-cancel:hover { background: #d0d0d0; }
+        
+        .eye-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-left: 6px; vertical-align: middle; }
+        .no-records-row { text-align: center; color: #888; padding: 1.5rem; font-style: italic; display: none; }
+    </style>
+</head>
+<body>
+    <!-- MAIN CONTENT -->
+    <div id="admin-content">
+        <header class="head">
+            <h1>DB Admin Control Panel</h1>
+            <div class="nav"><a href="/">Home</a> | <a href="/logout">Logout</a></div>
+        </header>
+
+        <main style="padding: 1rem; max-width: 1200px; margin: 0 auto;">
+            <% if (typeof success !== 'undefined' && success) { %><div class="success-msg show success">✓ <%= success %><button class="alert-close-btn">&times;</button></div><% } %>
+            <% if (typeof error !== 'undefined' && error) { %><div class="success-msg show error">✕ <%= error %><button class="alert-close-btn">&times;</button></div><% } %>
+
+            <!-- Action Bar -->
+            <section style="margin-bottom: 2rem;">
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+                    <button class="btn success" onclick="openAddStudentModal()">
+                        <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg></span>
+                        Register New Student
+                    </button>
+                    <button class="btn" onclick="openAddTeacherModal()">
+                        <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span>
+                        Register Teacher
+                    </button>
+                    <a class="btn export-btn" href="/admin/export-students">
+                        <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v10l3-3 1.41 1.41L12 18.83l-4.41-4.42L9 10l3 3V3h2zm-7 16h14v2H5v-2z"/></svg></span>
+                        Export Students
+                    </a>
+                    <form action="/admin/import-students" method="POST" enctype="multipart/form-data" class="import-form">
+                        <input id="studentFileInput" type="file" name="studentFile" accept=".xlsx,.xls,.csv" required class="file-input-hidden">
+                        <button id="importStudentsTrigger" type="button" class="btn import-btn">
+                            <span class="svg-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M18 15v3H6v-3H4v3c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2v-3h-2zm-1.41-8.41L13 9.17V3h-2v6.17l-3.59-3.58L6 7l6 6 6-6-1.41-1.41z"/></svg></span>
+                            Import Students
+                        </button>
+                        <button type="submit" class="btn submit-import-btn" style="display:none;">Submit Import</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Registered Teachers Section -->
+            <section style="margin-bottom: 2.5rem;">
+<h2>Registered Teachers</h2>
+                
+                <!-- Live Teacher Search Filter -->
+                <div class="filter-bar">
+                    <input type="text" id="teacherSearchInput" placeholder="🔍 Search teacher by name, subject, or class..." onkeyup="filterTeachers()">
+                </div>
+
+                <div class="table-responsive">
+                    <table id="teachersTable">
+                        <thead>
+                            <tr><th>Name</th><th>Assigned Subject(s)</th><th>Assigned Classes</th><th>Passkey (Hashed)</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            <% teachers.forEach(t => { %>
+                                <tr class="teacher-row">
+                                    <td><strong class="t-name"><%= t.name %></strong></td>
+                                    <td class="t-subjects"><%= Array.isArray(t.subjects) ? t.subjects.join(", ") : t.subjects %></td>
+                                    <td class="t-classes"><%= Array.isArray(t.classes) ? t.classes.join(", ") : t.class %></td>
+                                    <td>
+                                        <span class="hidden-passkey" data-raw="<%= t.passkey %>" style="font-family: monospace; background: #eee; padding: 2px 6px; border-radius: 4px;">••••••••</span>
+                                        <button class="eye-btn" onclick="togglePasskey(this)">👁️</button>
+                                    </td>
+                                    <td>
+                                        <form action="/admin/delete-teacher" method="POST" style="display:inline;" onsubmit="return confirm('Delete this teacher permanently?');">
+                                            <input type="hidden" name="teacherId" value="<%= t.id %>">
+                                            <button type="submit" class="btn danger" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                    <div id="noTeacherMatch" class="no-records-row">No teachers match your search filter.</div>
+                </div>
+            </section>
+
+            <!-- Student Database Management -->
+            <section>
+                <h2>Active Students List</h2>
+                
+                <!-- Live Student Search & Category Filters -->
+                <div class="filter-bar">
+                    <input type="text" id="studentSearchInput" placeholder="🔍 Search student by name or ID..." onkeyup="filterStudents()">
+                    
+                    <select id="studentClassFilter" onchange="filterStudents()">
+                        <option value="">All Classes</option>
+                        <option value="JSS1">JSS1</option>
+                        <option value="JSS2">JSS2</option>
+                        <option value="JSS3">JSS3</option>
+                        <option value="SS1">SS1</option>
+                        <option value="SS2">SS2</option>
+                        <option value="SS3">SS3</option>
+                    </select>
+
+                    <select id="studentDeptFilter" onchange="filterStudents()">
+                        <option value="">All Departments</option>
+                        <option value="Not in senior class">Not in senior class</option>
+                        <option value="Science">Science</option>
+                        <option value="Art">Art</option>
+                        <option value="Commercial">Commercial</option>
+                    </select>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="studentsTable">
+                        <thead>
+                            <tr><th>ID</th><th>Name</th><th>Class</th><th>Dept</th><th>Residence</th><th>Report Sheet</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            <% students.forEach(stu => { %>
+                                <tr class="student-row"
+                                    data-id="<%= stu.id %>"
+                                    data-firstname="<%= stu.Firstname || '' %>"
+                                    data-lastname="<%= stu.Lastname || '' %>"
+                                    data-age="<%= stu.age || '' %>"
+                                    data-gender="<%= stu.gender || '' %>"
+                                    data-class="<%= stu.Class || '' %>"
+                                    data-department="<%= stu.department || '' %>"
+                                    data-residence="<%= stu.residence || '' %>"
+                                    data-post="<%= stu.post || '' %>">
+                                    <td class="s-id"><%= stu.id %></td>
+                                    <td class="s-name"><strong><%= stu.Firstname %> <%= stu.Lastname %></strong></td>
+                                    <td class="s-class"><%= stu.Class %></td>
+                                    <td class="s-dept"><%= stu.department %></td>
+                                    <td><%= stu.residence %></td>
+                                    <td>
+                                        <!-- View Report Sheet Link -->
+                                        <a href="/reportsheet?studentId=<%= stu.id %>" 
+                                            target="_blank" 
+                                            style="background-color: #1a365d; color: white; 
+                                            padding: 5px 10px; border-radius: 4px; text-decoration: none; 
+                                            font-size: 13px; font-weight: bold;">
+                                                📄 Report Sheet
+                                        </a>
+                                    </td>
+                                    <td class="action-buttons">
+                                        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                                            <button class="btn" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onclick="openPromoteModal(this.closest('tr'))">
+                                            <span class="svg-icon small" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg></span>
+                                            Promote
+                                        </button>
+                                            <button class="btn warning" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;" onclick="openArchiveModal('<%= stu.id %>', '<%= stu.Firstname %> <%= stu.Lastname %>')">
+                                                <span class="svg-icon small" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v2H5V4zm2 4h10l-1 12H8L7 8zm5-6h2v2h-2V2zm-4.5 7.5h1v7h-1v-7zm7 0h1v7h-1v-7z"/></svg></span>
+                                                Archive
+                                            </button>
+                                            <form action="/admin/delete-student" method="POST" style="display:inline;" onsubmit="return confirm('WARNING: Delete this student permanently?');">
+                                                <input type="hidden" name="studentId" value="<%= stu.id %>">
+                                                <button type="submit" class="btn danger" style="font-size: 0.8rem; padding: 0.4rem 0.6rem;">Delete</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                    <div id="noStudentMatch" class="no-records-row">No students match your search filters.</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal 1: Add Student -->
+    <div id="studentModal" class="modal-container">
+        <div class="modal-content">
+            <span class="close-buttton" onclick="closeModal('studentModal')">&times;</span>
+            <h2>Register New Student</h2>
+            <form action="/admin/add-student" method="POST">
+                <div class="form-group"><label>First Name</label><input type="text" name="Firstname" required placeholder="Basit"></div>
+                <div class="form-group"><label>Last Name</label><input type="text" name="Lastname" required placeholder="Adulakeem"></div>
+                <div class="form-group"><label>Age</label><input type="number" name="age" required placeholder="14"></div>
+                <div class="form-group"><label>Gender</label><select name="gender" required><option>Male</option><option>Female</option><option>Other</option></select></div>
+                <div class="form-group"><label>Residence</label><select name="residence" required><option>Day</option><option>Boarding</option></select></div>
+                <div class="form-group"><label>Class</label><select name="Class" required><option>JSS1</option><option>JSS2</option><option>JSS3</option><option>SS1</option><option>SS2</option><option>SS3</option></select></div>
+                <div class="form-group"><label>Department</label><select name="department" required><option>Not in senior class</option><option>Science</option><option>Art</option><option>Commercial</option></select></div>
+                <div class="form-group"><label>Post</label><select name="post" required><option>Senior Prefect Boy</option><option>Senior Prefect Girl</option><option>Assistant Senior Prefect Boy</option><option>Assistant Senior Prefect Girl</option><option>Not a Prefect</option></select></div>
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit">✓ Register Student</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('studentModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Add Teacher -->
+    <div id="teacherModal" class="modal-container">
+        <div class="modal-content">
+            <span class="close-buttton" onclick="closeModal('teacherModal')">&times;</span>
+            <h2>Register New Teacher</h2>
+            <form action="/admin/add-teacher" method="POST">
+                <div class="form-group">
+                    <label>Teacher Full Name</label>
+                    <input type="text" name="name" required placeholder="e.g. Mrs. Adebayo">
+                </div>
+                
+                <div class="form-group">
+                    <label>Assigned Subjects</label>
+                    <div class="subject-grid">
+                        <label><input type="checkbox" name="subjects[]" value="Math"> Math</label>
+                        <label><input type="checkbox" name="subjects[]" value="English"> English</label>
+                        <label><input type="checkbox" name="subjects[]" value="Lit-in-English"> Lit-in-English</label>
+                        <label><input type="checkbox" name="subjects[]" value="Physics"> Physics</label>
+                        <label><input type="checkbox" name="subjects[]" value="Chemistry"> Chemistry</label>
+                        <label><input type="checkbox" name="subjects[]" value="Biology"> Biology</label>
+                        <label><input type="checkbox" name="subjects[]" value="Agric"> Agric</label>
+                        <label><input type="checkbox" name="subjects[]" value="Economics"> Economics</label>
+                    </div>
+                    
+                    <button type="button" class="dashed-btn" onclick="addCustomSubjectField()">+ Add Custom Subject</button>
+                    <div id="custom-subject-container"></div>
+                    <datalist id="existing-subjects">
+                        <% if (typeof allSubjects !== 'undefined' && allSubjects.length > 0) { %>
+                            <% allSubjects.forEach(subject => { %>
+                                <option value="<%= subject %>"></option>
+                            <% }) %>
+                        <% } %>
+                    </datalist>
+                </div>
+
+                <div class="form-group">
+                    <label>Assigned Classes</label>
+                    <div class="subject-grid">
+                        <label><input type="checkbox" name="classes[]" value="JSS1"> JSS1</label>
+                        <label><input type="checkbox" name="classes[]" value="JSS2"> JSS2</label>
+                        <label><input type="checkbox" name="classes[]" value="JSS3"> JSS3</label>
+                        <label><input type="checkbox" name="classes[]" value="SS1"> SS1</label>
+                        <label><input type="checkbox" name="classes[]" value="SS2"> SS2</label>
+                        <label><input type="checkbox" name="classes[]" value="SS3"> SS3</label>
+                    </div>
+                    <label style="margin-top: 1.5rem;">Target Departments (For SS Classes)</label>
+                    <div class="subject-grid">
+                        <label><input type="checkbox" name="departments[]" value="Not in senior class" checked> Junior (JSS)</label>
+                        <label><input type="checkbox" name="departments[]" value="Science" checked> Science</label>
+                        <label><input type="checkbox" name="departments[]" value="Art" checked> Art</label>
+                        <label><input type="checkbox" name="departments[]" value="Commercial" checked> Commercial</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="isClassTeacher" value="true"> This teacher is a class teacher
+                    </label>
+                    <div style="margin-top: 0.75rem;">
+                        <label>Class Teacher Classes</label>
+                        <div class="subject-grid">
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="JSS1"> JSS1</label>
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="JSS2"> JSS2</label>
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="JSS3"> JSS3</label>
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="SS1"> SS1</label>
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="SS2"> SS2</label>
+                            <label><input type="checkbox" name="classTeacherClasses[]" value="SS3"> SS3</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit">✓ Register & Generate Passkey</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('teacherModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Promote Student -->
+    <div id="promoteModal" class="modal-container">
+        <div class="modal-content">
+            <span class="close-buttton" onclick="closeModal('promoteModal')">&times;</span>
+            <h2>Promote & Edit Student</h2>
+            <p id="promoteStudentName" style="color: #666; margin-bottom: 1rem;"></p>
+            <form action="/admin/update-student" method="POST">
+                <input type="hidden" id="promoteStudentId" name="id">
+
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="promoteFirstName" name="Firstname" placeholder="Optional">
+                </div>
+
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="promoteLastName" name="Lastname" placeholder="Optional">
+                </div>
+
+                <div class="form-group">
+                    <label>Age</label>
+                    <input type="number" id="promoteAge" name="age" min="1" placeholder="Optional">
+                </div>
+
+                <div class="form-group">
+                    <label>Gender</label>
+                    <select id="promoteGender" name="gender">
+                        <option value="">Select gender...</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Class: <strong id="promoteCurrentClass"></strong></label>
+                </div>
+
+                <div class="form-group">
+                    <label>Promote to Class</label>
+                    <select id="promoteClassSelect" name="Class">
+                        <option value="">Select new class...</option>
+                        <option value="JSS1">JSS1</option>
+                        <option value="JSS2">JSS2</option>
+                        <option value="JSS3">JSS3</option>
+                        <option value="SS1">SS1</option>
+                        <option value="SS2">SS2</option>
+                        <option value="SS3">SS3</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Department</label>
+                    <select id="promoteDepartment" name="department">
+                        <option value="">Select department...</option>
+                        <option value="Not in senior class">Not in senior class</option>
+                        <option value="Science">Science</option>
+                        <option value="Art">Art</option>
+                        <option value="Commercial">Commercial</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Residence</label>
+                    <select id="promoteResidence" name="residence">
+                        <option value="">Select residence...</option>
+                        <option value="Day">Day</option>
+                        <option value="Boarding">Boarding</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Position</label>
+                    <select id="promotePost" name="post">
+                        <option value="">Select position...</option>
+                        <option value="Senior Prefect Boy">Senior Prefect Boy</option>
+                        <option value="Senior Prefect Girl">Senior Prefect Girl</option>
+                        <option value="Assistant Senior Prefect Boy">Assistant Senior Prefect Boy</option>
+                        <option value="Assistant Senior Prefect Girl">Assistant Senior Prefect Girl</option>
+                        <option value="Not a Prefect">Not a Prefect</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit">✓ Save Student Update</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('promoteModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 4: Archive Student -->
+    <div id="archiveModal" class="modal-container">
+        <div class="modal-content">
+            <span class="close-buttton" onclick="closeModal('archiveModal')">&times;</span>
+            <h2>Archive Student</h2>
+            <p style="color: #666; margin-bottom: 1rem;">Move student to graduated/archived records.</p>
+            <p id="archiveStudentName" style="color: #333; font-weight: 600; margin-bottom: 1rem;"></p>
+            
+            <form action="/admin/graduate-student" method="POST">
+                <input type="hidden" id="archiveStudentId" name="studentId">
+                
+                <div class="form-group">
+                    <label>Reason for Departure</label>
+                    <input type="text" name="departureReason" placeholder="e.g. Graduated SS3, Transferred, Withdrawn" required>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn-submit" style="background: #f5576c;">✓ Archive Student</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal('archiveModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- REAL-TIME LIVE SEARCH FOR TEACHERS ---
+        function filterTeachers() {
+            const query = document.getElementById('teacherSearchInput').value.toLowerCase().trim();
+            const rows = document.querySelectorAll('.teacher-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = row.querySelector('.t-name').textContent.toLowerCase();
+                const subjects = row.querySelector('.t-subjects').textContent.toLowerCase();
+                const classes = row.querySelector('.t-classes').textContent.toLowerCase();
+
+                if (name.includes(query) || subjects.includes(query) || classes.includes(query)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noTeacherMatch').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        // --- REAL-TIME LIVE SEARCH & FILTERS FOR STUDENTS ---
+        function filterStudents() {
+            const query = document.getElementById('studentSearchInput').value.toLowerCase().trim();
+            const selectedClass = document.getElementById('studentClassFilter').value.toLowerCase();
+            const selectedDept = document.getElementById('studentDeptFilter').value.toLowerCase();
+            const rows = document.querySelectorAll('.student-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const id = row.querySelector('.s-id').textContent.toLowerCase();
+                const name = row.querySelector('.s-name').textContent.toLowerCase();
+                const stuClass = row.querySelector('.s-class').textContent.toLowerCase();
+                const stuDept = row.querySelector('.s-dept').textContent.toLowerCase();
+
+                const matchesQuery = !query || id.includes(query) || name.includes(query);
+                const matchesClass = !selectedClass || stuClass === selectedClass;
+                const matchesDept = !selectedDept || stuDept === selectedDept;
+
+                if (matchesQuery && matchesClass && matchesDept) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noStudentMatch').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        // Toggle Passkey visibility
+        function togglePasskey(btn) {
+            const span = btn.previousElementSibling;
+            if (span.textContent === '••••••••') {
+                span.textContent = span.getAttribute('data-raw');
+                btn.textContent = '🙈';
+            } else {
+                span.textContent = '••••••••';
+                btn.textContent = '👁️';
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        function addCustomSubjectField() {
+            const container = document.getElementById('custom-subject-container');
+    
+            const wrapper = document.createElement('div');
+            wrapper.style.display = 'flex';
+            wrapper.style.gap = '8px';
+            wrapper.style.marginTop = '8px';
+
+            wrapper.innerHTML = `
+                <input 
+                    type="text" 
+                    name="subjects[]" 
+                    list="existing-subjects" 
+                    placeholder="Type or select subject..." 
+                    style="flex: 1; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;"
+                    required
+                />
+                    <button 
+                        type="button" 
+                        onclick="this.parentElement.remove()" 
+                        style="background: #e74c3c; color: white; border: none; padding: 0 12px; border-radius: 6px; cursor: pointer; font-weight: bold;"
+                    >✕</button>
+                `;
+
+            container.appendChild(wrapper);
+        }
+        
+        function openAddStudentModal() {
+            document.getElementById('studentModal').classList.add('show');
+        }
+
+        function openAddTeacherModal() {
+            document.getElementById('teacherModal').classList.add('show');
+        }
+
+        function openPromoteModal(row) {
+            const dataset = row.dataset || {};
+            const id = dataset.id || '';
+            const currentClass = dataset.class || '';
+            const name = `${dataset.firstname || ''} ${dataset.lastname || ''}`.trim() || 'Student';
+
+            document.getElementById('promoteStudentId').value = id;
+            document.getElementById('promoteCurrentClass').textContent = currentClass;
+            document.getElementById('promoteStudentName').textContent = `Editing: ${name}`;
+            document.getElementById('promoteFirstName').value = dataset.firstname || '';
+            document.getElementById('promoteLastName').value = dataset.lastname || '';
+            document.getElementById('promoteAge').value = dataset.age || '';
+            document.getElementById('promoteGender').value = dataset.gender || '';
+            document.getElementById('promoteClassSelect').value = currentClass || '';
+            document.getElementById('promoteDepartment').value = dataset.department || '';
+            document.getElementById('promoteResidence').value = dataset.residence || '';
+            document.getElementById('promotePost').value = dataset.post || '';
+            document.getElementById('promoteModal').classList.add('show');
+        }
+
+        function openArchiveModal(id, name) {
+            document.getElementById('archiveStudentId').value = id;
+            document.getElementById('archiveStudentName').textContent = `Student: ${name}`;
+            document.getElementById('archiveModal').classList.add('show');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-container')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

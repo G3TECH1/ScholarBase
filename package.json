@@ -1,0 +1,45 @@
+{
+  "name": "scholarbase-desktop",
+  "version": "1.0.0",
+  "description": "ScholarBase desktop wrapper (Electron) for the Nodejs backend + Python DB daemon",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --publish=never",
+    "build-python": "echo 'Python build is handled by CI via PyInstaller'"
+  },
+  "build": {
+    "appId": "com.scholarbase.desktop",
+    "files": [
+      "config/**",
+      "controller/**",
+      "model/**",
+      "public/**",
+      "routes/**",
+      "utils/**",
+      "views/**",
+      "app.js",
+      "electron-main.js",
+      "package.json"
+    ],
+    "directories": { "buildResources": "build" },
+    "extraResources": [
+      {
+        "from": "python_dist/",
+        "to": "python_backend/",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg" },
+    "linux": { "target": ["AppImage", "deb"] }
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

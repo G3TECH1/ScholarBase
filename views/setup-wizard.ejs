@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScholarBase DBMS - First Time Setup</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .setup-container { background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 600px; width: 90%; }
+        .setup-header { text-align: center; margin-bottom: 2rem; }
+        .setup-header h1 { color: #333; font-size: 2rem; margin: 0 0 0.5rem 0; }
+        .setup-header p { color: #666; margin: 0; }
+        .setup-step { margin: 2rem 0; }
+        .setup-step h2 { font-size: 1.3rem; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: #333; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+        .form-hint { font-size: 0.85rem; color: #999; margin-top: 0.3rem; }
+        .btn-group { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn { flex: 1; padding: 0.75rem; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }
+        .success-msg { background: #d4edda; color: #155724; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 4px solid #28a745; position: relative; }
+        .error-msg { background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; border-left: 4px solid #f5c6cb; position: relative; }
+        .info-box { background: #f0f7ff; border-left: 4px solid #667eea; padding: 1rem; border-radius: 4px; margin: 1.5rem 0; color: #333; }
+        .info-box strong { color: #667eea; }
+        .step-indicator { text-align: center; color: #999; font-size: 0.9rem; margin-top: 1rem; }
+        
+        @media print {
+            body { background: white; }
+            .btn-group, .step-indicator { display: none !important; }
+            .setup-container { box-shadow: none; border: 1px solid #ccc; width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+
+        <% if (typeof keys !== 'undefined' && keys) { %>
+            <!-- ========================================== -->
+            <!-- STEP 2: EMERGENCY RECOVERY KEYS DISPLAY    -->
+            <!-- ========================================== -->
+            <div class="setup-header">
+                <h1>Emergency Recovery Keys</h1>
+                <p>Save or print these keys. They will NOT be displayed again.</p>
+            </div>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="success-msg">✓ <%= success %></div>
+            <% } %>
+
+            <div class="info-box" style="background: #fff3cd; border-color: #ffeba2; color: #856404;">
+                <strong>Critical:</strong> Because ScholarBase DBMS operates completely offline, these keys are the ONLY way to recover passwords if forgotten. Write them down or print them for the school safe.
+            </div>
+
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+                <p style="margin-bottom: 5px; font-weight: bold; color: #333;">Principal Emergency Recovery Key:</p>
+                <code style="font-size: 20px; color: #1a365d; font-weight: bold; font-family: monospace; letter-spacing: 1px;"><%= keys.principal %></code>
+            </div>
+
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+                <p style="margin-bottom: 5px; font-weight: bold; color: #333;">Admin Emergency Recovery Key:</p>
+                <code style="font-size: 20px; color: #1a365d; font-weight: bold; font-family: monospace; letter-spacing: 1px;"><%= keys.admin %></code>
+            </div>
+
+            <div class="btn-group" style="flex-direction: column;">
+                <button type="button" onclick="window.print()" class="btn btn-primary" style="margin-bottom: 10px;">🖨️ Print Recovery Keys</button>
+                <a href="/" class="btn" style="text-align: center; background: #22c55e; color: white; text-decoration: none; display: block; line-height: 2.5rem;">Proceed to Login Screen</a>
+            </div>
+
+            <div class="step-indicator">
+                Step 2 of 2 - Security Keys Backup
+            </div>
+
+        <% } else { %>
+            <!-- ========================================== -->
+            <!-- STEP 1: INITIAL SETUP FORM                 -->
+            <!-- ========================================== -->
+            <div class="setup-header">
+                <h1>ScholarBase DBMS</h1>
+                <p>First-Time System Setup</p>
+            </div>
+
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="success-msg">✓ <%= success %></div>
+            <% } %>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="error-msg">✕ <%= error %></div>
+            <% } %>
+
+            <div class="info-box">
+                <strong>Welcome!</strong> This is your first time running ScholarBase DBMS. Please set up your system credentials below.
+            </div>
+
+            <form action="/setup/initialize" method="POST">
+                <div class="setup-step">
+                    <h2>Principal Portal Setup</h2>
+                    <p style="color: #666; margin-bottom: 1rem;">Set the principal's login credentials.</p>
+
+                    <div class="form-group">
+                        <label for="principalName">Principal Full Name</label>
+                        <input type="text" id="principalName" name="principalName" placeholder="e.g. Dr. John Okonkwo" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="principalPassword">Principal Master Password</label>
+                        <input type="password" id="principalPassword" name="principalPassword" placeholder="••••••••" required minlength="6">
+                    </div>
+                </div>
+
+                <div class="setup-step">
+                    <h2>Database Admin Portal Setup</h2>
+                    <p style="color: #666; margin-bottom: 1rem;">Set the admin's login credentials.</p>
+
+                    <div class="form-group">
+                        <label for="adminName">Admin Full Name</label>
+                        <input type="text" id="adminName" name="adminName" placeholder="e.g. Mrs. Chioma Adeyemi" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="adminPassword">Admin Master Password</label>
+                        <input type="password" id="adminPassword" name="adminPassword" placeholder="••••••••" required minlength="6">
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Important:</strong> Unique emergency recovery keys will be generated on the next step to recover access if you ever lose your passwords.
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">Complete Setup & Initialize System</button>
+                </div>
+
+                <div class="step-indicator">
+                    Step 1 of 2 - System Credentials
+                </div>
+            </form>
+        <% } %>
+
+    </div>
+
+    <script>
+        const setupForm = document.querySelector('form');
+        if (setupForm) {
+            setupForm.addEventListener('submit', function(e) {
+                const principalPassword = document.getElementById('principalPassword').value;
+                const adminPassword = document.getElementById('adminPassword').value;
+
+                if (principalPassword.length < 6 || adminPassword.length < 6) {
+                    e.preventDefault();
+                    alert('Passwords must be at least 6 characters long.');
+                    return;
+                }
+
+                if (!confirm('Initialize system and generate recovery keys?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
