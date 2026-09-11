@@ -1,7 +1,7 @@
 {
   "name": "scholarbase-desktop",
   "version": "1.0.0",
-  "description": "ScholarBase desktop wrapper (Electron) for the Nodejs backend + Python DB daemon",
+  "description": "ScholarBase offline-first desktop school management system",
   "main": "electron-main.js",
   "scripts": {
     "start": "electron .",
@@ -9,6 +9,23 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder --publish=never",
     "build-python": "echo 'Python build is handled by CI via PyInstaller'"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.6",
+    "ejs": "^6.0.1",
+    "express": "^5.1.0",
+    "express-session": "^1.19.0",
+    "flash-message": "^2.0.1",
+    "mongoose": "^9.6.3",
+    "multer": "^2.3.0",
+    "pug": "^3.0.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^26.0.0",
+    "electron-builder": "^24.0.0"
   },
   "build": {
     "appId": "com.scholarbase.desktop",
@@ -36,12 +53,17 @@
       "target": "nsis",
       "icon": "build/icon.ico"
     },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "uninstallDisplayName": "ScholarBase",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
     "mac": { "target": "dmg" },
     "linux": { "target": ["AppImage", "deb"] }
-  },
-  "devDependencies": {
-    "electron": "^26.0.0",
-    "electron-builder": "^24.0.0"
   },
   "author": "",
   "license": "MIT"
