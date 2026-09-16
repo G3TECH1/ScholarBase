@@ -3,6 +3,14 @@ const licenseForm = document.getElementById('license-form');
 const licenseKey = document.getElementById('license-key');
 const message = document.getElementById('message');
 
+// Fetch status on load to display Hardware ID
+window.licenseAPI.getStatus().then((status) => {
+  const hwidEl = document.getElementById('hwid-display');
+  if (hwidEl && status.hardwareId) {
+    hwidEl.textContent = status.hardwareId;
+  }
+});
+
 function showMessage(text, isError = false) {
   message.textContent = text;
   message.className = `message ${isError ? 'error' : 'success'}`;
