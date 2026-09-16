@@ -21,7 +21,8 @@
     "mongoose": "^9.6.3",
     "multer": "^2.3.0",
     "pug": "^3.0.3",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "node-machine-id": "^1.1.12"
   },
   "devDependencies": {
     "electron": "^26.0.0",
