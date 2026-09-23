@@ -31,6 +31,7 @@
   "build": {
     "appId": "com.scholarbase.desktop",
     "files": [
+      "**/*",
       "config/**",
       "controller/**",
       "model/**",
@@ -40,7 +41,9 @@
       "views/**",
       "app.js",
       "electron-main.js",
-      "package.json"
+      "package.json",
+      "!README.md",
+      "!.env.example"
     ],
     "directories": { "buildResources": "build" },
     "extraResources": [
