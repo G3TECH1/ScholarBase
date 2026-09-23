@@ -71,19 +71,26 @@ function activateTrial() {
   return getStatus();
 }
 
+// Paste the exact contents of your public.key file here:
+const PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAB79KebjhEM+62emkazNl2LhNBeEZqw4tYYtQ+a5KpDY=
+-----END PUBLIC KEY-----`;
+
 function verifyLicenseKey(key) {
   if (typeof key !== 'string' || !key.trim()) return { valid: false, reason: 'missing-key' };
 
   const parts = key.trim().split('.');
   if (parts.length !== 3 || parts[0] !== 'SB1') return { valid: false, reason: 'invalid-format' };
 
-  const secret = 'SCHOLARBASE_SECURE_2026_HMAC_SECRET_KEY!#';
-  if (!secret) return { valid: false, reason: 'license-verification-unconfigured' };
+  // Verify signature using the Public Key
+  const isValid = crypto.verify(
+    null,
+    Buffer.from(`${parts[0]}.${parts[1]}`),
+    PUBLIC_KEY,
+    Buffer.from(parts[2], 'base64url')
+  );
 
-  const expectedSignature = crypto.createHmac('sha256', secret).update(`${parts[0]}.${parts[1]}`).digest('base64url');
-  if (parts[2].length !== expectedSignature.length || !crypto.timingSafeEqual(Buffer.from(parts[2]), Buffer.from(expectedSignature))) {
-    return { valid: false, reason: 'invalid-signature' };
-  }
+  if (!isValid) return { valid: false, reason: 'invalid-signature' };
 
   try {
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
@@ -95,7 +102,6 @@ function verifyLicenseKey(key) {
     return { valid: false, reason: 'invalid-payload' };
   }
 }
-
 function activateLicense(key) {
   const verification = verifyLicenseKey(key);
   if (!verification.valid) return { active: false, reason: verification.reason, hardwareId: getHardwareId() };
