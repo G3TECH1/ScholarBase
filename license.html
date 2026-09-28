@@ -5,6 +5,54 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Activate ScholarBase</title>
   <link rel="stylesheet" href="license.css">
+  <style>
+    .system-uuid-container {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: 2px solid #667eea;
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+      box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .system-uuid-container:hover {
+      box-shadow: 0 12px 24px rgba(102, 126, 234, 0.5);
+      transform: translateY(-2px);
+      transition: all 0.3s ease;
+    }
+
+    .system-uuid-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #e0e7ff;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .system-uuid-value {
+      font-size: 1.1rem;
+      font-family: 'Monaco', 'Courier New', monospace;
+      color: #ffffff;
+      word-break: break-all;
+      font-weight: 600;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #fbbf24;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+      }
+      50% {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6);
+      }
+    }
+  </style>
 </head>
 <body>
   <main class="shell">
@@ -23,9 +71,10 @@
       <div class="divider"><span>or use a license key</span></div>
       <form id="license-form">
         <label for="license-key">License key</label>
-        <p style="font-size: 0.8rem; color: #536259; margin-top: 1rem;">
-            Your Machine Hardware ID: <strong id="hwid-display">Loading...</strong>
-        </p>
+        <div class="system-uuid-container">
+          <span class="system-uuid-label">🔐 Your System UUID</span>
+          <div class="system-uuid-value" id="hwid-display">Loading...</div>
+        </div>
         <input id="license-key" name="licenseKey" type="text" placeholder="Paste your key here" autocomplete="off">
         <button class="secondary-button" type="submit">Activate license</button>
       </form>
