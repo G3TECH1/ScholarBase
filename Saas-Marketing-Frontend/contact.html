@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Contact G3Tech to arrange a ScholarBase walkthrough, ask about plans, or get help accessing your school's portal.">
+  <title>Contact & Book a Demo | ScholarBase</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-navy sticky-top py-3">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center" href="index.html">
+        <i class="bi bi-mortarboard-fill fs-3 text-emerald me-2"></i>
+        <span class="fw-bold fs-4 text-white">ScholarBase</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+      <div class="collapse navbar-collapse" id="siteNav">
+        <ul class="navbar-nav mx-auto">
+          <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
+          <li class="nav-item"><a class="nav-link" href="pricing.html">Pricing</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">About G3Tech</a></li>
+          <li class="nav-item"><a class="nav-link active" href="contact.html">Contact</a></li>
+        </ul>
+        <div class="d-flex flex-column flex-lg-row gap-2">
+          <a class="btn btn-outline-light" href="#portal-access">School Login</a>
+          <a class="btn btn-primary" href="#demo-form">Book a Demo</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="inner-hero py-5 py-lg-6">
+      <div class="container py-lg-4 text-center">
+        <span class="badge bg-emerald bg-opacity-10 text-emerald fw-bold px-3 py-2 rounded-pill mb-3">Let's Connect</span>
+        <h1 class="display-5 fw-bold text-navy mb-3">Start a Conversation with G3Tech</h1>
+        <p class="lead text-secondary col-lg-7 mx-auto">Tell us a little about your school. We’ll help you explore the platform, arrange a live demo, and answer any technical questions.</p>
+      </div>
+    </header>
+
+    <section class="py-5 bg-white">
+      <div class="container">
+        <div class="row g-5">
+          <div class="col-lg-7" data-reveal>
+            <div class="contact-panel card p-4 p-md-5 border shadow-sm rounded-4">
+              <span class="text-uppercase text-emerald fw-bold tracking-wider small mb-1 d-block">Schedule Walkthrough</span>
+              <h2 class="fw-bold text-navy mb-4">Book a Live Demo</h2>
+              <form id="demo-form" data-contact-form data-contact-email="g3techs@gmail.com">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold text-navy" for="contact-name">Your Name</label>
+                    <input class="form-control" id="contact-name" name="name" autocomplete="name" required placeholder="e.g. Dr. John Adeleke">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label fw-semibold text-navy" for="contact-email">Email Address</label>
+                    <input class="form-control" id="contact-email" name="email" type="email" autocomplete="email" required placeholder="e.g. principal@academics.edu">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold text-navy" for="school-name">School or Institution Name</label>
+                    <input class="form-control" id="school-name" name="school" autocomplete="organization" required placeholder="e.g. Diamond Height Academy">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold text-navy" for="interest">What would you like to explore?</label>
+                    <select class="form-select" id="interest" name="interest" required>
+                      <option value="" selected disabled>Select an option</option>
+                      <option>Book a live system demo</option>
+                      <option>Subscription and pricing plans</option>
+                      <option>School portal setup</option>
+                      <option>Custom technical requirements</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label fw-semibold text-navy" for="message">Additional Notes</label>
+                    <textarea class="form-control" id="message" name="message" rows="4" placeholder="Share details about your current student capacity or operational goals..."></textarea>
+                  </div>
+                  <div class="col-12 mt-4">
+                    <button class="btn btn-primary btn-lg w-100 py-3 fw-bold" type="submit">
+                      <i class="bi bi-envelope-paper-fill me-2"></i>Send Enquiry to G3Tech
+                    </button>
+                    <p class="form-note mt-3 mb-0 text-muted small text-center" aria-live="polite">This will prepare an email directly to <strong>g3techs@gmail.com</strong>.</p>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-5" data-reveal>
+            <div class="contact-aside card p-4 p-md-5 border-0 bg-light rounded-4 h-100">
+              <span class="text-uppercase text-primary fw-bold tracking-wider small mb-1 d-block">Direct Support</span>
+              <h3 class="fw-bold text-navy mb-3">Direct Communication</h3>
+              <p class="text-secondary small mb-4">Reach out to our engineering group directly for technical inquiries, architecture questions, or onboarding assistance.</p>
+              
+              <div class="d-flex align-items-center gap-3 mb-4 p-3 bg-white rounded-3 border">
+                <div class="fs-3 text-emerald"><i class="bi bi-envelope-at-fill"></i></div>
+                <div>
+                  <div class="small text-muted">Official Email</div>
+                  <a class="fw-bold text-navy text-decoration-none" href="mailto:g3techs@gmail.com">g3techs@gmail.com</a>
+                </div>
+              </div>
+
+              <hr class="my-4">
+
+              <div id="portal-access">
+                <h5 class="fw-bold text-navy mb-2"><i class="bi bi-door-open-fill text-primary me-2"></i>School Portal Login</h5>
+                <p class="text-secondary small mb-0">ScholarBase access is provisioned per institution. Please contact your school administrator or ICT coordinator to obtain your custom portal link and login credentials.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-section py-4 bg-navy text-white">
+    <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+      <span>&copy; <span data-current-year>2026</span> G3Tech IT Group &middot; ScholarBase</span>
+      <div class="footer-links d-flex gap-3">
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="about.html">About</a>
+        <a href="mailto:g3techs@gmail.com">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
